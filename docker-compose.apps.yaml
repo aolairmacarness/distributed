@@ -1,10 +1,11 @@
 services:
   postgres:
     image: postgres:16
+    # Bound to loopback only; not reachable from other hosts.
     ports:
-      - 5432:5432
+      - 127.0.0.1:5432:5432
     environment:
-      POSTGRES_PASSWORD: example
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-example}
       POSTGRES_DB: jobber
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -16,11 +17,13 @@ services:
       retries: 5
 
   pulsar:
-    image: apachepulsar/pulsar
+    # Pinned by digest (the image previously pulled as :latest).
+    image: apachepulsar/pulsar@sha256:4507075d8c11b34629f3a0b41f48e3c659951e601538562ee0c088cd2c737ec0
     command: /pulsar/bin/pulsar standalone
+    # Pulsar has no auth here; the healthcheck runs inside the container,
+    # so the admin API (8080) is not published at all.
     ports:
-      - 6650:6650
-      - 8080:8080
+      - 127.0.0.1:6650:6650
     restart: always
     healthcheck:
       test:
@@ -34,12 +37,15 @@ services:
       context: .
       dockerfile: apps/auth/Dockerfile
     ports:
-      - 3000:3000
+      - 127.0.0.1:3000:3000
     environment:
       PORT: 3000
-      DATABASE_URL: postgresql://postgres:example@postgres:5432/auth
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-example}@postgres:5432/auth
       AUTH_GRPC_SERVICE_URL: 0.0.0.0:5000
-      JWT_SECRET: secret
+      # Required: generate with `openssl rand -base64 48` and export it.
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET to a long random value}
+      # Cookies are Secure by default; plain-HTTP localhost needs this off.
+      SECURE_COOKIE: ${SECURE_COOKIE:-false}
       JWT_EXPIRATION_MS: 360000
       NODE_ENV: production
     depends_on:
@@ -51,10 +57,10 @@ services:
       context: .
       dockerfile: apps/jobs/Dockerfile
     ports:
-      - 3001:3001
+      - 127.0.0.1:3001:3001
     environment:
       PORT: 3001
-      DATABASE_URL: postgresql://postgres:example@postgres:5432/jobs
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-example}@postgres:5432/jobs
       JOBS_GRPC_SERVICE_URL: 0.0.0.0:5001
       AUTH_GRPC_SERVICE_URL: auth:5000
       PULSAR_SERVICE_URL: pulsar://pulsar:6650
@@ -90,10 +96,10 @@ services:
       context: .
       dockerfile: apps/products/Dockerfile
     ports:
-      - 3002:3002
+      - 127.0.0.1:3002:3002
     environment:
       PORT: 3002
-      DATABASE_URL: postgresql://postgres:example@postgres:5432/products
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-example}@postgres:5432/products
       PRODUCTS_GRPC_SERVICE_URL: 0.0.0.0:5002
       NODE_ENV: production
     depends_on:

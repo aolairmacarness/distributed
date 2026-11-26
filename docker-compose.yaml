@@ -1,15 +1,17 @@
 services:
   postgres:
-    image: postgres
+    image: postgres:16
+    # Bound to loopback only; not reachable from other hosts.
     ports:
-      - 5432:5432
+      - 127.0.0.1:5432:5432
     environment:
-      POSTGRES_PASSWORD: example
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-example}
 
   pulsar:
-    image: apachepulsar/pulsar
+    # Pinned by digest (the image previously pulled as :latest).
+    image: apachepulsar/pulsar@sha256:4507075d8c11b34629f3a0b41f48e3c659951e601538562ee0c088cd2c737ec0
     command: >
       /pulsar/bin/pulsar standalone
     ports:
-      - 6650:6650
+      - 127.0.0.1:6650:6650
     restart: always

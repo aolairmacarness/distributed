@@ -4,6 +4,7 @@ package jobs;
 
 service JobsService {
     rpc Acknowledge(AcknowledgeRequest) returns (AcknowledgeResponse) {}
+    rpc Fail(FailRequest) returns (FailResponse) {}
 }
 
 message AcknowledgeRequest {
@@ -11,3 +12,9 @@ message AcknowledgeRequest {
 }
 
 message AcknowledgeResponse {}
+
+message FailRequest {
+    int32 jobId = 1;
+}
+
+message FailResponse {}

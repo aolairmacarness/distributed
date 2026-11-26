@@ -6,13 +6,14 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
   OnModuleInit,
 } from '@nestjs/common';
 import { JOB_METADATA_KEY } from './decorators/job.decorator';
 import { AbstractJob } from './jobs/abstract.job';
 import { JobMetadata } from './interfaces/job-metadata.interface';
-import { readFileSync } from 'fs';
-import { UPLOAD_FILE_PATH } from './uploads/upload';
+import { readFile } from 'fs/promises';
+import { resolveUploadPath } from './uploads/upload';
 import { PrismaService } from './prisma/prisma.service';
 import { JobStatus } from './models/job-status.enum';
 
@@ -22,43 +23,49 @@ export class JobsService implements OnModuleInit {
 
   constructor(
     private readonly discoveryService: DiscoveryService,
-    private readonly prismaService: PrismaService
+    private readonly prismaService: PrismaService,
   ) {}
 
   async onModuleInit() {
-    this.jobs = await this.discoveryService.providersWithMetaAtKey<JobMetadata>(
-      JOB_METADATA_KEY
-    );
+    this.jobs =
+      await this.discoveryService.providersWithMetaAtKey<JobMetadata>(
+        JOB_METADATA_KEY,
+      );
   }
 
   getJobsMetadata() {
     return this.jobs.map((job) => job.meta);
   }
 
-  async getJob(id: number) {
-    return this.prismaService.job.findUnique({
-      where: { id },
+  async getJob(id: number, userId: number) {
+    const job = await this.prismaService.job.findFirst({
+      where: { id, userId },
     });
+    if (!job) {
+      throw new NotFoundException(`Job with ID ${id} does not exist.`);
+    }
+    return job;
   }
 
-  async getJobs() {
-    return this.prismaService.job.findMany();
+  async getJobs(userId: number) {
+    return this.prismaService.job.findMany({ where: { userId } });
   }
 
-  async executeJob(name: string, data: any) {
+  async executeJob(name: string, data: any, userId: number) {
     const job = this.jobs.find((job) => job.meta.name === name);
     if (!job) {
       throw new BadRequestException(`Job ${name} does not exist.`);
     }
     if (!(job.discoveredClass.instance instanceof AbstractJob)) {
       throw new InternalServerErrorException(
-        'Job is not an instance of AbstractJob.'
+        'Job is not an instance of AbstractJob.',
       );
     }
-    return job.discoveredClass.instance.execute(
-      data.fileName ? this.getFile(data.fileName) : data,
-      job.meta.name
-    );
+    const payload =
+      data && !Array.isArray(data) && 'fileName' in data
+        ? await this.getFile(data.fileName)
+        : data;
+    return job.discoveredClass.instance.execute(payload, job.meta.name, userId);
   }
 
   async acknowledge(jobId: number) {
@@ -79,9 +86,10 @@ export class JobsService implements OnModuleInit {
       data: { completed: { increment: 1 } },
     });
 
-    if (updatedJob.completed === job.size) {
-      await this.prismaService.job.update({
-        where: { id: jobId },
+    if (updatedJob.completed >= job.size) {
+      // Conditional update so concurrent acks can't double-finish the job.
+      await this.prismaService.job.updateMany({
+        where: { id: jobId, ended: null },
         data: { status: JobStatus.COMPLETED, ended: new Date() },
       });
     }
@@ -89,18 +97,26 @@ export class JobsService implements OnModuleInit {
     return updatedJob;
   }
 
-  private getFile(fileName?: string) {
-    if (!fileName) {
-      return;
+  /** Marks a job FAILED after a message exhausted its redeliveries. */
+  async fail(jobId: number) {
+    await this.prismaService.job.updateMany({
+      where: { id: jobId, ended: null },
+      data: { status: JobStatus.FAILED, ended: new Date() },
+    });
+  }
+
+  private async getFile(fileName: unknown) {
+    const filePath = resolveUploadPath(fileName);
+    let contents: string;
+    try {
+      contents = await readFile(filePath, 'utf-8');
+    } catch {
+      throw new BadRequestException('File not found.');
     }
     try {
-      return JSON.parse(
-        readFileSync(`${UPLOAD_FILE_PATH}/${fileName}`, 'utf-8')
-      );
-    } catch (err) {
-      throw new InternalServerErrorException(
-        `Failed to read file: ${fileName}`
-      );
+      return JSON.parse(contents);
+    } catch {
+      throw new BadRequestException('File is not valid JSON.');
     }
   }
 }

@@ -15,25 +15,33 @@ spec:
       labels:
         app: jobs
     spec:
+      {{- include "common.podSecurityContext" . | nindent 6 }}
       initContainers:
         - name: prisma-migrate
           image: {{ .Values.jobs.image }}
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
           command: ["sh", "-c"]
           args:
             - |
               npx prisma migrate deploy --schema=apps/jobs/prisma/schema.prisma
           env:
             {{- include "common.env" . | nindent 12 }}
-            - name: DATABASE_URL
-              value: postgresql://postgres:postgres@{{ .Release.Name }}-postgresql.postgresql.svc.cluster.local:5432/jobs
+            {{- include "common.dbEnv" (dict "root" . "db" "jobs") | nindent 12 }}
       containers:
         - name: jobs
           image: {{ .Values.jobs.image }}
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          {{- include "common.containerSecurityContext" . | nindent 10 }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
             - name: uploads-volume
               mountPath: /app/apps/jobs/uploads
+            {{- include "common.tmpMount" . | nindent 12 }}
           ports:
             - containerPort: {{ .Values.jobs.port.http }}
             - containerPort: {{ .Values.jobs.port.grpc }}
@@ -45,10 +53,10 @@ spec:
               value: "{{ .Values.jobs.port.http }}"
             - name: JOBS_GRPC_SERVICE_URL
               value: "0.0.0.0:{{ .Values.jobs.port.grpc }}"
-            - name: DATABASE_URL
-              value: postgresql://postgres:postgres@{{ .Release.Name }}-postgresql.postgresql.svc.cluster.local:5432/jobs
+            {{- include "common.dbEnv" (dict "root" . "db" "jobs") | nindent 12 }}
       volumes:
         - name: uploads-volume
           persistentVolumeClaim:
             claimName: uploads-pvc
+        {{- include "common.tmpVolume" . | nindent 8 }}
 {{- end }}

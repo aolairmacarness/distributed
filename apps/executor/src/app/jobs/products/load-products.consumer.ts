@@ -20,20 +20,30 @@ export class LoadProductsConsumer
   constructor(
     pulsarClient: PulsarClient,
     @Inject(Packages.JOBS) clientJobs: ClientGrpc,
-    @Inject(Packages.PRODUCTS) private clientProducts: ClientGrpc
+    @Inject(Packages.PRODUCTS) private clientProducts: ClientGrpc,
   ) {
-    super(Jobs.LOAD_PRODUCTS, pulsarClient, clientJobs);
+    super(Jobs.LOAD_PRODUCTS, pulsarClient, clientJobs, LoadProductsMessage);
   }
 
   async onModuleInit() {
     this.productsService =
       this.clientProducts.getService<ProductsServiceClient>(
-        PRODUCTS_SERVICE_NAME
+        PRODUCTS_SERVICE_NAME,
       );
     await super.onModuleInit();
   }
 
   protected async execute(data: LoadProductsMessage) {
-    await firstValueFrom(this.productsService.createProduct(data));
+    const { name, category, price, stock, rating, description } = data;
+    await firstValueFrom(
+      this.productsService.createProduct({
+        name,
+        category,
+        price,
+        stock,
+        rating,
+        description,
+      }),
+    );
   }
 }

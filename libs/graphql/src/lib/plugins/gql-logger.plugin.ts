@@ -11,17 +11,18 @@ export class GqlLoggingPlugin implements ApolloServerPlugin {
   private readonly logger = new Logger(GqlLoggingPlugin.name);
 
   async requestDidStart(
-    requestContext: GraphQLRequestContext<BaseContext>
+    requestContext: GraphQLRequestContext<BaseContext>,
   ): Promise<void | GraphQLRequestListener<BaseContext>> {
     const { request } = requestContext;
     const start = Date.now();
     const requestId = uuidv4();
 
+    // Headers (session cookie) and variables (passwords, payloads) are
+    // deliberately not logged.
     this.logger.log({
       requestId,
-      headers: request.http?.headers,
+      operationName: request.operationName,
       query: request.query,
-      variables: request.variables,
     });
 
     return {
@@ -30,7 +31,7 @@ export class GqlLoggingPlugin implements ApolloServerPlugin {
 
         this.logger.log({
           requestId,
-          query: request.query,
+          operationName: request.operationName,
           statusCode: responseContext.response?.http?.status || 200,
           duration: `${duration}ms`,
         });

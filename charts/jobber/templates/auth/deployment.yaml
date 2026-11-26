@@ -15,22 +15,31 @@ spec:
       labels:
         app: auth
     spec:
+      {{- include "common.podSecurityContext" . | nindent 6 }}
       initContainers:
         - name: prisma-migrate
           image: {{ .Values.auth.image }}
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
           command: ["sh", "-c"]
           args:
             - |
               npx prisma migrate deploy --schema=apps/auth/prisma/schema.prisma
           env:
             {{- include "common.env" . | nindent 12 }}
-            - name: DATABASE_URL
-              value: postgresql://postgres:postgres@{{ .Release.Name }}-postgresql.postgresql.svc.cluster.local:5432/auth
+            {{- include "common.dbEnv" (dict "root" . "db" "auth") | nindent 12 }}
       containers:
         - name: auth
           image: {{ .Values.auth.image }}
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          {{- include "common.containerSecurityContext" . | nindent 10 }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            {{- include "common.tmpMount" . | nindent 12 }}
           ports:
             - containerPort: {{ .Values.auth.port.http }}
             - containerPort: {{ .Values.auth.port.grpc }}
@@ -38,16 +47,18 @@ spec:
             {{- include "common.env" . | nindent 12 }}
             - name: PORT
               value: "{{ .Values.auth.port.http }}"
-            {{- if .Values.auth.jwt.secure }}
             - name: SECURE_COOKIE
-              value: "{{ .Values.auth.jwt.secure }}"
-            {{- end }}
+              value: {{ .Values.auth.jwt.secure | toString | quote }}
             - name: JWT_SECRET
-              value: {{ .Values.auth.jwt.secret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "common.secretName" . }}
+                  key: JWT_SECRET
             - name: JWT_EXPIRATION_MS
               value: "{{ .Values.auth.jwt.expirationMs }}"
             - name: AUTH_GRPC_SERVICE_URL
               value: "0.0.0.0:{{ .Values.auth.port.grpc }}"
-            - name: DATABASE_URL
-              value: postgresql://postgres:postgres@{{ .Release.Name }}-postgresql.postgresql.svc.cluster.local:5432/auth
+            {{- include "common.dbEnv" (dict "root" . "db" "auth") | nindent 12 }}
+      volumes:
+        {{- include "common.tmpVolume" . | nindent 8 }}
 {{- end }}

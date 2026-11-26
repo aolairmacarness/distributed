@@ -15,7 +15,7 @@ COPY apps/products ./apps/products
 COPY libs/grpc ./libs/grpc
 COPY libs/nestjs ./libs/nestjs
 
-RUN npm install
+RUN npm ci
 
 RUN apt-get update && apt-get install -y protobuf-compiler
 
@@ -42,5 +42,8 @@ COPY --from=builder /workspace/dist ./dist
 # Copy entrypoint script
 COPY apps/products/docker-entrypoint.sh /app/docker-entrypoint.sh
 RUN chmod +x /app/docker-entrypoint.sh
+
+# Run as the unprivileged "node" user (uid 1000) from the base image
+USER node
 
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
