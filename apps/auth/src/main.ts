@@ -1,6 +1,6 @@
 require('module-alias/register');
 import { NestFactory } from '@nestjs/core';
-import { Packages } from '@jobber/grpc';
+import { Packages, grpcServerCredentials } from '@jobber/grpc';
 import { AppModule } from './app/app.module';
 import { GrpcOptions, Transport } from '@nestjs/microservices';
 import { join } from 'path';
@@ -16,6 +16,7 @@ async function bootstrap() {
       url: app.get(ConfigService).getOrThrow('AUTH_GRPC_SERVICE_URL'),
       package: Packages.AUTH,
       protoPath: join(__dirname, '../../libs/grpc/proto/auth.proto'),
+      credentials: grpcServerCredentials(app.get(ConfigService)),
     },
   });
   await app.startAllMicroservices();

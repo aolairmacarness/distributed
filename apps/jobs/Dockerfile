@@ -20,7 +20,7 @@ COPY libs/nestjs ./libs/nestjs
 COPY libs/pulsar ./libs/pulsar
 COPY libs/prisma ./libs/prisma
 
-RUN npm install
+RUN npm ci
 
 RUN apt-get update && apt-get install -y protobuf-compiler
 
@@ -58,6 +58,12 @@ COPY --from=builder /workspace/apps/jobs/src/generated ./apps/jobs/src/generated
 
 # Copy entrypoint script
 COPY apps/jobs/docker-entrypoint.sh /app/docker-entrypoint.sh
+
+# Uploads are the only path the app writes to
+RUN mkdir -p /app/apps/jobs/uploads && chown node:node /app/apps/jobs/uploads
 RUN chmod +x /app/docker-entrypoint.sh
+
+# Run as the unprivileged "node" user (uid 1000) from the base image
+USER node
 
 ENTRYPOINT ["/app/docker-entrypoint.sh"]

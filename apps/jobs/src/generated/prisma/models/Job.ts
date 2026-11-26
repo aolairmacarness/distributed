@@ -28,12 +28,14 @@ export type AggregateJob = {
 
 export type JobAvgAggregateOutputType = {
   id: number | null
+  userId: number | null
   size: number | null
   completed: number | null
 }
 
 export type JobSumAggregateOutputType = {
   id: number | null
+  userId: number | null
   size: number | null
   completed: number | null
 }
@@ -41,6 +43,7 @@ export type JobSumAggregateOutputType = {
 export type JobMinAggregateOutputType = {
   id: number | null
   name: string | null
+  userId: number | null
   size: number | null
   completed: number | null
   status: string | null
@@ -51,6 +54,7 @@ export type JobMinAggregateOutputType = {
 export type JobMaxAggregateOutputType = {
   id: number | null
   name: string | null
+  userId: number | null
   size: number | null
   completed: number | null
   status: string | null
@@ -61,6 +65,7 @@ export type JobMaxAggregateOutputType = {
 export type JobCountAggregateOutputType = {
   id: number
   name: number
+  userId: number
   size: number
   completed: number
   status: number
@@ -72,12 +77,14 @@ export type JobCountAggregateOutputType = {
 
 export type JobAvgAggregateInputType = {
   id?: true
+  userId?: true
   size?: true
   completed?: true
 }
 
 export type JobSumAggregateInputType = {
   id?: true
+  userId?: true
   size?: true
   completed?: true
 }
@@ -85,6 +92,7 @@ export type JobSumAggregateInputType = {
 export type JobMinAggregateInputType = {
   id?: true
   name?: true
+  userId?: true
   size?: true
   completed?: true
   status?: true
@@ -95,6 +103,7 @@ export type JobMinAggregateInputType = {
 export type JobMaxAggregateInputType = {
   id?: true
   name?: true
+  userId?: true
   size?: true
   completed?: true
   status?: true
@@ -105,6 +114,7 @@ export type JobMaxAggregateInputType = {
 export type JobCountAggregateInputType = {
   id?: true
   name?: true
+  userId?: true
   size?: true
   completed?: true
   status?: true
@@ -202,6 +212,7 @@ export type JobGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs
 export type JobGroupByOutputType = {
   id: number
   name: string
+  userId: number | null
   size: number
   completed: number
   status: string
@@ -214,7 +225,7 @@ export type JobGroupByOutputType = {
   _max: JobMaxAggregateOutputType | null
 }
 
-type GetJobGroupByPayload<T extends JobGroupByArgs> = Prisma.PrismaPromise<
+export type GetJobGroupByPayload<T extends JobGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<JobGroupByOutputType, T['by']> &
       {
@@ -235,6 +246,7 @@ export type JobWhereInput = {
   NOT?: Prisma.JobWhereInput | Prisma.JobWhereInput[]
   id?: Prisma.IntFilter<"Job"> | number
   name?: Prisma.StringFilter<"Job"> | string
+  userId?: Prisma.IntNullableFilter<"Job"> | number | null
   size?: Prisma.IntFilter<"Job"> | number
   completed?: Prisma.IntFilter<"Job"> | number
   status?: Prisma.StringFilter<"Job"> | string
@@ -245,6 +257,7 @@ export type JobWhereInput = {
 export type JobOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  userId?: Prisma.SortOrderInput | Prisma.SortOrder
   size?: Prisma.SortOrder
   completed?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -258,6 +271,7 @@ export type JobWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.JobWhereInput[]
   NOT?: Prisma.JobWhereInput | Prisma.JobWhereInput[]
   name?: Prisma.StringFilter<"Job"> | string
+  userId?: Prisma.IntNullableFilter<"Job"> | number | null
   size?: Prisma.IntFilter<"Job"> | number
   completed?: Prisma.IntFilter<"Job"> | number
   status?: Prisma.StringFilter<"Job"> | string
@@ -268,6 +282,7 @@ export type JobWhereUniqueInput = Prisma.AtLeast<{
 export type JobOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  userId?: Prisma.SortOrderInput | Prisma.SortOrder
   size?: Prisma.SortOrder
   completed?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -286,6 +301,7 @@ export type JobScalarWhereWithAggregatesInput = {
   NOT?: Prisma.JobScalarWhereWithAggregatesInput | Prisma.JobScalarWhereWithAggregatesInput[]
   id?: Prisma.IntWithAggregatesFilter<"Job"> | number
   name?: Prisma.StringWithAggregatesFilter<"Job"> | string
+  userId?: Prisma.IntNullableWithAggregatesFilter<"Job"> | number | null
   size?: Prisma.IntWithAggregatesFilter<"Job"> | number
   completed?: Prisma.IntWithAggregatesFilter<"Job"> | number
   status?: Prisma.StringWithAggregatesFilter<"Job"> | string
@@ -295,6 +311,7 @@ export type JobScalarWhereWithAggregatesInput = {
 
 export type JobCreateInput = {
   name: string
+  userId?: number | null
   size: number
   completed: number
   status: string
@@ -305,6 +322,7 @@ export type JobCreateInput = {
 export type JobUncheckedCreateInput = {
   id?: number
   name: string
+  userId?: number | null
   size: number
   completed: number
   status: string
@@ -314,6 +332,7 @@ export type JobUncheckedCreateInput = {
 
 export type JobUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   size?: Prisma.IntFieldUpdateOperationsInput | number
   completed?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.StringFieldUpdateOperationsInput | string
@@ -324,6 +343,7 @@ export type JobUpdateInput = {
 export type JobUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   size?: Prisma.IntFieldUpdateOperationsInput | number
   completed?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.StringFieldUpdateOperationsInput | string
@@ -334,6 +354,7 @@ export type JobUncheckedUpdateInput = {
 export type JobCreateManyInput = {
   id?: number
   name: string
+  userId?: number | null
   size: number
   completed: number
   status: string
@@ -343,6 +364,7 @@ export type JobCreateManyInput = {
 
 export type JobUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   size?: Prisma.IntFieldUpdateOperationsInput | number
   completed?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.StringFieldUpdateOperationsInput | string
@@ -353,6 +375,7 @@ export type JobUpdateManyMutationInput = {
 export type JobUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   size?: Prisma.IntFieldUpdateOperationsInput | number
   completed?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.StringFieldUpdateOperationsInput | string
@@ -363,6 +386,7 @@ export type JobUncheckedUpdateManyInput = {
 export type JobCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  userId?: Prisma.SortOrder
   size?: Prisma.SortOrder
   completed?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -372,6 +396,7 @@ export type JobCountOrderByAggregateInput = {
 
 export type JobAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  userId?: Prisma.SortOrder
   size?: Prisma.SortOrder
   completed?: Prisma.SortOrder
 }
@@ -379,6 +404,7 @@ export type JobAvgOrderByAggregateInput = {
 export type JobMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  userId?: Prisma.SortOrder
   size?: Prisma.SortOrder
   completed?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -389,6 +415,7 @@ export type JobMaxOrderByAggregateInput = {
 export type JobMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  userId?: Prisma.SortOrder
   size?: Prisma.SortOrder
   completed?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -398,12 +425,21 @@ export type JobMinOrderByAggregateInput = {
 
 export type JobSumOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  userId?: Prisma.SortOrder
   size?: Prisma.SortOrder
   completed?: Prisma.SortOrder
 }
 
 export type StringFieldUpdateOperationsInput = {
   set?: string
+}
+
+export type NullableIntFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
 }
 
 export type IntFieldUpdateOperationsInput = {
@@ -427,6 +463,7 @@ export type NullableDateTimeFieldUpdateOperationsInput = {
 export type JobSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   name?: boolean
+  userId?: boolean
   size?: boolean
   completed?: boolean
   status?: boolean
@@ -437,6 +474,7 @@ export type JobSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = ru
 export type JobSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   name?: boolean
+  userId?: boolean
   size?: boolean
   completed?: boolean
   status?: boolean
@@ -447,6 +485,7 @@ export type JobSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extension
 export type JobSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   name?: boolean
+  userId?: boolean
   size?: boolean
   completed?: boolean
   status?: boolean
@@ -457,6 +496,7 @@ export type JobSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extension
 export type JobSelectScalar = {
   id?: boolean
   name?: boolean
+  userId?: boolean
   size?: boolean
   completed?: boolean
   status?: boolean
@@ -464,7 +504,7 @@ export type JobSelectScalar = {
   ended?: boolean
 }
 
-export type JobOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "size" | "completed" | "status" | "started" | "ended", ExtArgs["result"]["job"]>
+export type JobOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "userId" | "size" | "completed" | "status" | "started" | "ended", ExtArgs["result"]["job"]>
 
 export type $JobPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Job"
@@ -472,6 +512,7 @@ export type $JobPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
     name: string
+    userId: number | null
     size: number
     completed: number
     status: string
@@ -902,6 +943,7 @@ export interface Prisma__JobClient<T, Null = never, ExtArgs extends runtime.Type
 export interface JobFieldRefs {
   readonly id: Prisma.FieldRef<"Job", 'Int'>
   readonly name: Prisma.FieldRef<"Job", 'String'>
+  readonly userId: Prisma.FieldRef<"Job", 'Int'>
   readonly size: Prisma.FieldRef<"Job", 'Int'>
   readonly completed: Prisma.FieldRef<"Job", 'Int'>
   readonly status: Prisma.FieldRef<"Job", 'String'>
@@ -1083,6 +1125,11 @@ export type JobFindManyArgs<ExtArgs extends runtime.Types.Extensions.InternalArg
    * Skip the first `n` Jobs.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of Jobs.
+   */
   distinct?: Prisma.JobScalarFieldEnum | Prisma.JobScalarFieldEnum[]
 }
 

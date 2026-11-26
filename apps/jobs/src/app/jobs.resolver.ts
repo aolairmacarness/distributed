@@ -1,10 +1,15 @@
-import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { JobsService } from './jobs.service';
 import { ExecuteJobInput } from './dto/execute-job.input';
 import { UseGuards } from '@nestjs/common';
-import { GqlAuthGuard } from '@jobber/graphql';
+import { CurrentUser, GqlAuthGuard } from '@jobber/graphql';
 import { Job } from './models/job.model';
 import { JobMetadata } from './models/job-metadata.model';
+
+interface AuthenticatedUser {
+  id: number;
+  email: string;
+}
 
 @Resolver()
 export class JobsResolver {
@@ -18,22 +23,29 @@ export class JobsResolver {
 
   @Mutation(() => Job)
   @UseGuards(GqlAuthGuard)
-  async executeJob(@Args('executeJobInput') executeJobInput: ExecuteJobInput) {
+  async executeJob(
+    @Args('executeJobInput') executeJobInput: ExecuteJobInput,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
     return this.jobsService.executeJob(
       executeJobInput.name,
-      executeJobInput.data
+      executeJobInput.data,
+      user.id,
     );
   }
 
   @Query(() => [Job], { name: 'jobs' })
   @UseGuards(GqlAuthGuard)
-  async getJobs() {
-    return this.jobsService.getJobs();
+  async getJobs(@CurrentUser() user: AuthenticatedUser) {
+    return this.jobsService.getJobs(user.id);
   }
 
   @Query(() => Job, { name: 'job' })
   @UseGuards(GqlAuthGuard)
-  async getJob(@Args('id') id: number) {
-    return this.jobsService.getJob(id);
+  async getJob(
+    @Args('id', { type: () => Int }) id: number,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.jobsService.getJob(id, user.id);
   }
 }

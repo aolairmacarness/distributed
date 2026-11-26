@@ -17,18 +17,26 @@ import type * as Prisma from "./prismaNamespace.js"
 
 const config: runtime.GetPrismaClientConfig = {
   "previewFeatures": [],
-  "clientVersion": "7.2.0",
-  "engineVersion": "0c8ef2ce45c83248ab3df073180d5eda9e8be7a3",
+  "clientVersion": "7.10.1",
+  "engineVersion": "d1b3f377ca835d73fd50954a5e22128b9ebdd6b8",
   "activeProvider": "postgresql",
-  "inlineSchema": "generator client {\n  provider = \"prisma-client\"\n  output   = \"../src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n}\n\nmodel Job {\n  id        Int       @id @default(autoincrement())\n  name      String\n  size      Int\n  completed Int\n  status    String\n  started   DateTime  @default(now())\n  ended     DateTime?\n}\n",
+  "inlineSchema": "generator client {\n  provider     = \"prisma-client\"\n  output       = \"../src/generated/prisma\"\n  moduleFormat = \"cjs\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n}\n\nmodel Job {\n  id        Int       @id @default(autoincrement())\n  name      String\n  userId    Int?\n  size      Int\n  completed Int\n  status    String\n  started   DateTime  @default(now())\n  ended     DateTime?\n\n  @@index([userId])\n}\n",
   "runtimeDataModel": {
     "models": {},
     "enums": {},
     "types": {}
+  },
+  "parameterizationSchema": {
+    "strings": [],
+    "graph": ""
   }
 }
 
-config.runtimeDataModel = JSON.parse("{\"models\":{\"Job\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"size\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"completed\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"status\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"started\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"ended\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
+config.runtimeDataModel = JSON.parse("{\"models\":{\"Job\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"size\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"completed\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"status\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"started\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"ended\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null,\"schema\":null}},\"enums\":{},\"types\":{}}")
+config.parameterizationSchema = {
+  strings: JSON.parse("[\"where\",\"Job.findUnique\",\"Job.findUniqueOrThrow\",\"orderBy\",\"cursor\",\"Job.findFirst\",\"Job.findFirstOrThrow\",\"Job.findMany\",\"data\",\"Job.createOne\",\"Job.createMany\",\"Job.createManyAndReturn\",\"Job.updateOne\",\"Job.updateMany\",\"Job.updateManyAndReturn\",\"create\",\"update\",\"Job.upsertOne\",\"Job.deleteOne\",\"Job.deleteMany\",\"having\",\"_count\",\"_avg\",\"_sum\",\"_min\",\"_max\",\"Job.groupBy\",\"Job.aggregate\",\"AND\",\"OR\",\"NOT\",\"id\",\"name\",\"userId\",\"size\",\"completed\",\"status\",\"started\",\"ended\",\"equals\",\"in\",\"notIn\",\"lt\",\"lte\",\"gt\",\"gte\",\"not\",\"contains\",\"startsWith\",\"endsWith\",\"set\",\"increment\",\"decrement\",\"multiply\",\"divide\"]"),
+  graph: "PAsQCxwAACwAMB0AAAQAEB4AACwAMB8CAAAAASABAC4AISECAC8AISICAC0AISMCAC0AISQBAC4AISVAADAAISZAADEAIQEAAAABACABAAAAAQAgCxwAACwAMB0AAAQAEB4AACwAMB8CAC0AISABAC4AISECAC8AISICAC0AISMCAC0AISQBAC4AISVAADAAISZAADEAIQIhAAAyACAmAAAyACADAAAABAAgAwAABQAwBAAAAQAgAwAAAAQAIAMAAAUAMAQAAAEAIAMAAAAEACADAAAFADAEAAABACAIHwIAAAABIAEAAAABIQIAAAABIgIAAAABIwIAAAABJAEAAAABJUAAAAABJkAAAAABAQgAAAkAIAgfAgAAAAEgAQAAAAEhAgAAAAEiAgAAAAEjAgAAAAEkAQAAAAElQAAAAAEmQAAAAAEBCAAACwAwAQgAAAsAMAgfAgA6ACEgAQA4ACEhAgA5ACEiAgA6ACEjAgA6ACEkAQA4ACElQAA7ACEmQAA8ACECAAAAAQAgCAAADgAgCB8CADoAISABADgAISECADkAISICADoAISMCADoAISQBADgAISVAADsAISZAADwAIQIAAAAEACAIAAAQACACAAAABAAgCAAAEAAgAwAAAAEAIA8AAAkAIBAAAA4AIAEAAAABACABAAAABAAgBxUAADMAIBYAADQAIBcAADcAIBgAADYAIBkAADUAICEAADIAICYAADIAIAscAAAaADAdAAAXABAeAAAaADAfAgAbACEgAQAcACEhAgAdACEiAgAbACEjAgAbACEkAQAcACElQAAeACEmQAAfACEDAAAABAAgAwAAFgAwFAAAFwAgAwAAAAQAIAMAAAUAMAQAAAEAIAscAAAaADAdAAAXABAeAAAaADAfAgAbACEgAQAcACEhAgAdACEiAgAbACEjAgAbACEkAQAcACElQAAeACEmQAAfACENFQAAJAAgFgAAKwAgFwAAJAAgGAAAJAAgGQAAJAAgJwIAAAABKAIAAAAEKQIAAAAEKgIAAAABKwIAAAABLAIAAAABLQIAAAABLgIAKgAhDhUAACQAIBgAACkAIBkAACkAICcBAAAAASgBAAAABCkBAAAABCoBAAAAASsBAAAAASwBAAAAAS0BAAAAAS4BACgAIS8BAAAAATABAAAAATEBAAAAAQ0VAAAhACAWAAAnACAXAAAhACAYAAAhACAZAAAhACAnAgAAAAEoAgAAAAUpAgAAAAUqAgAAAAErAgAAAAEsAgAAAAEtAgAAAAEuAgAmACELFQAAJAAgGAAAJQAgGQAAJQAgJ0AAAAABKEAAAAAEKUAAAAAEKkAAAAABK0AAAAABLEAAAAABLUAAAAABLkAAIwAhCxUAACEAIBgAACIAIBkAACIAICdAAAAAAShAAAAABSlAAAAABSpAAAAAAStAAAAAASxAAAAAAS1AAAAAAS5AACAAIQsVAAAhACAYAAAiACAZAAAiACAnQAAAAAEoQAAAAAUpQAAAAAUqQAAAAAErQAAAAAEsQAAAAAEtQAAAAAEuQAAgACEIJwIAAAABKAIAAAAFKQIAAAAFKgIAAAABKwIAAAABLAIAAAABLQIAAAABLgIAIQAhCCdAAAAAAShAAAAABSlAAAAABSpAAAAAAStAAAAAASxAAAAAAS1AAAAAAS5AACIAIQsVAAAkACAYAAAlACAZAAAlACAnQAAAAAEoQAAAAAQpQAAAAAQqQAAAAAErQAAAAAEsQAAAAAEtQAAAAAEuQAAjACEIJwIAAAABKAIAAAAEKQIAAAAEKgIAAAABKwIAAAABLAIAAAABLQIAAAABLgIAJAAhCCdAAAAAAShAAAAABClAAAAABCpAAAAAAStAAAAAASxAAAAAAS1AAAAAAS5AACUAIQ0VAAAhACAWAAAnACAXAAAhACAYAAAhACAZAAAhACAnAgAAAAEoAgAAAAUpAgAAAAUqAgAAAAErAgAAAAEsAgAAAAEtAgAAAAEuAgAmACEIJwgAAAABKAgAAAAFKQgAAAAFKggAAAABKwgAAAABLAgAAAABLQgAAAABLggAJwAhDhUAACQAIBgAACkAIBkAACkAICcBAAAAASgBAAAABCkBAAAABCoBAAAAASsBAAAAASwBAAAAAS0BAAAAAS4BACgAIS8BAAAAATABAAAAATEBAAAAAQsnAQAAAAEoAQAAAAQpAQAAAAQqAQAAAAErAQAAAAEsAQAAAAEtAQAAAAEuAQApACEvAQAAAAEwAQAAAAExAQAAAAENFQAAJAAgFgAAKwAgFwAAJAAgGAAAJAAgGQAAJAAgJwIAAAABKAIAAAAEKQIAAAAEKgIAAAABKwIAAAABLAIAAAABLQIAAAABLgIAKgAhCCcIAAAAASgIAAAABCkIAAAABCoIAAAAASsIAAAAASwIAAAAAS0IAAAAAS4IACsAIQscAAAsADAdAAAEABAeAAAsADAfAgAtACEgAQAuACEhAgAvACEiAgAtACEjAgAtACEkAQAuACElQAAwACEmQAAxACEIJwIAAAABKAIAAAAEKQIAAAAEKgIAAAABKwIAAAABLAIAAAABLQIAAAABLgIAJAAhCycBAAAAASgBAAAABCkBAAAABCoBAAAAASsBAAAAASwBAAAAAS0BAAAAAS4BACkAIS8BAAAAATABAAAAATEBAAAAAQgnAgAAAAEoAgAAAAUpAgAAAAUqAgAAAAErAgAAAAEsAgAAAAEtAgAAAAEuAgAhACEIJ0AAAAABKEAAAAAEKUAAAAAEKkAAAAABK0AAAAABLEAAAAABLUAAAAABLkAAJQAhCCdAAAAAAShAAAAABSlAAAAABSpAAAAAAStAAAAAASxAAAAAAS1AAAAAAS5AACIAIQAAAAAAAAEyAQAAAAEFMgIAAAABMwIAAAABNAIAAAABNQIAAAABNgIAAAABBTICAAAAATMCAAAAATQCAAAAATUCAAAAATYCAAAAAQEyQAAAAAEBMkAAAAABAAAAAAUVAAYWAAcXAAgYAAkZAAoAAAAAAAUVAAYWAAcXAAgYAAkZAAoBAgECAwEFBgEGBwEHCAEJCgEKDAILDQMMDwENEQIOEgQREwESFAETFQIaGAUbGQs"
+}
 
 async function decodeBase64AsWasm(wasmBase64: string): Promise<WebAssembly.Module> {
   const { Buffer } = await import('node:buffer')
@@ -37,12 +45,14 @@ async function decodeBase64AsWasm(wasmBase64: string): Promise<WebAssembly.Modul
 }
 
 config.compilerWasm = {
-  getRuntime: async () => await import("@prisma/client/runtime/query_compiler_bg.postgresql.mjs"),
+  getRuntime: async () => await import("@prisma/client/runtime/query_compiler_fast_bg.postgresql.js"),
 
   getQueryCompilerWasmModule: async () => {
-    const { wasm } = await import("@prisma/client/runtime/query_compiler_bg.postgresql.wasm-base64.mjs")
+    const { wasm } = await import("@prisma/client/runtime/query_compiler_fast_bg.postgresql.wasm-base64.js")
     return await decodeBase64AsWasm(wasm)
-  }
+  },
+
+  importName: "./query_compiler_fast_bg.js"
 }
 
 
@@ -57,7 +67,9 @@ export interface PrismaClientConstructor {
    * Type-safe database client for TypeScript
    * @example
    * ```
-   * const prisma = new PrismaClient()
+   * const prisma = new PrismaClient({
+   *   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL })
+   * })
    * // Fetch zero or more Jobs
    * const jobs = await prisma.job.findMany()
    * ```
@@ -70,7 +82,7 @@ export interface PrismaClientConstructor {
     LogOpts extends LogOptions<Options> = LogOptions<Options>,
     OmitOpts extends Prisma.PrismaClientOptions['omit'] = Options extends { omit: infer U } ? U : Prisma.PrismaClientOptions['omit'],
     ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs
-  >(options: Prisma.Subset<Options, Prisma.PrismaClientOptions> ): PrismaClient<LogOpts, OmitOpts, ExtArgs>
+  >(options: Prisma.PrismaClientConstructorArgs<Options>): PrismaClient<LogOpts, OmitOpts, ExtArgs>
 }
 
 /**
@@ -79,7 +91,9 @@ export interface PrismaClientConstructor {
  * Type-safe database client for TypeScript
  * @example
  * ```
- * const prisma = new PrismaClient()
+ * const prisma = new PrismaClient({
+ *   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL })
+ * })
  * // Fetch zero or more Jobs
  * const jobs = await prisma.job.findMany()
  * ```
@@ -89,7 +103,7 @@ export interface PrismaClientConstructor {
 
 export interface PrismaClient<
   in LogOpts extends Prisma.LogLevel = never,
-  in out OmitOpts extends Prisma.PrismaClientOptions['omit'] = undefined,
+  in out OmitOpts extends Prisma.PrismaClientOptions['omit'] = Prisma.PrismaClientOptions['omit'],
   in out ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs
 > {
   [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['other'] }
@@ -164,9 +178,9 @@ export interface PrismaClient<
    * ])
    * ```
    * 
-   * Read more in our [docs](https://www.prisma.io/docs/concepts/components/prisma-client/transactions).
+   * Read more in our [docs](https://www.prisma.io/docs/orm/prisma-client/queries/transactions).
    */
-  $transaction<P extends Prisma.PrismaPromise<any>[]>(arg: [...P], options?: { isolationLevel?: Prisma.TransactionIsolationLevel }): runtime.Types.Utils.JsPromise<runtime.Types.Utils.UnwrapTuple<P>>
+  $transaction<P extends Prisma.PrismaPromise<any>[]>(arg: [...P], options?: { maxWait?: number, timeout?: number, isolationLevel?: Prisma.TransactionIsolationLevel }): runtime.Types.Utils.JsPromise<runtime.Types.Utils.UnwrapTuple<P>>
 
   $transaction<R>(fn: (prisma: Omit<PrismaClient, runtime.ITXClientDenyList>) => runtime.Types.Utils.JsPromise<R>, options?: { maxWait?: number, timeout?: number, isolationLevel?: Prisma.TransactionIsolationLevel }): runtime.Types.Utils.JsPromise<R>
 

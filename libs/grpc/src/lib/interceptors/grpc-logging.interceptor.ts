@@ -14,17 +14,16 @@ export class GrpcLoggingInterceptor implements NestInterceptor {
 
   intercept(
     context: ExecutionContext,
-    next: CallHandler<any>
+    next: CallHandler<any>,
   ): Observable<any> | Promise<Observable<any>> {
     const handler = context.getHandler().name;
-    const args = context.getArgs()[0];
     const startTime = Date.now();
     const requestId = uuidv4();
 
+    // Request args are not logged: they can carry JWTs (e.g. Authenticate).
     this.logger.log({
       requestId,
       handler,
-      args,
     });
 
     return next.handle().pipe(
@@ -34,7 +33,7 @@ export class GrpcLoggingInterceptor implements NestInterceptor {
           handler,
           duration: Date.now() - startTime,
         });
-      })
+      }),
     );
   }
 }

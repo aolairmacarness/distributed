@@ -16,7 +16,7 @@ COPY libs/grpc ./libs/grpc
 COPY libs/nestjs ./libs/nestjs
 COPY libs/pulsar ./libs/pulsar
 
-RUN npm install
+RUN npm ci
 
 RUN apt-get update && apt-get install -y protobuf-compiler
 
@@ -38,5 +38,8 @@ ENV NODE_ENV=production
 RUN npm ci
 
 COPY --from=builder /workspace/dist ./dist
+
+# Run as the unprivileged "node" user (uid 1000) from the base image
+USER node
 
 CMD ["node", "dist/apps/executor/main"]

@@ -1,2 +1,15 @@
 node_modules
 dist
+.git
+.nx
+.claude
+coverage
+
+# Secrets and local config must never enter the build context
+.env
+.env.*
+**/.env
+**/.env.*
+
+# Uploaded job data
+apps/jobs/uploads/*

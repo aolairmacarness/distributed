@@ -4,7 +4,7 @@ import { AppModule } from './app/app.module';
 import { init } from '@jobber/nestjs';
 import { GrpcOptions, Transport } from '@nestjs/microservices';
 import { ConfigService } from '@nestjs/config';
-import { Packages } from '@jobber/grpc';
+import { Packages, grpcServerCredentials } from '@jobber/grpc';
 import { join } from 'path';
 
 async function bootstrap() {
@@ -16,6 +16,7 @@ async function bootstrap() {
       url: app.get(ConfigService).getOrThrow('PRODUCTS_GRPC_SERVICE_URL'),
       package: Packages.PRODUCTS,
       protoPath: join(__dirname, '../../libs/grpc/proto/products.proto'),
+      credentials: grpcServerCredentials(app.get(ConfigService)),
     },
   });
   await app.startAllMicroservices();

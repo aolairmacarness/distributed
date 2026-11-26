@@ -44,3 +44,7 @@ Thumbs.db
 .nx/workspace-data
 
 data/*
+# Local env files hold secrets; commit only *.env.example
+.env
+.env.*
+!.env.example

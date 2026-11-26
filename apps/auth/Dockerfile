@@ -21,7 +21,7 @@ COPY libs/nestjs ./libs/nestjs
 COPY libs/prisma ./libs/prisma
 
 # Install dependencies
-RUN npm install
+RUN npm ci
 
 RUN apt-get update && apt-get install -y protobuf-compiler
 
@@ -65,4 +65,7 @@ COPY apps/auth/docker-entrypoint.sh /app/docker-entrypoint.sh
 RUN chmod +x /app/docker-entrypoint.sh
 
 # Run the application
+# Run as the unprivileged "node" user (uid 1000) from the base image
+USER node
+
 ENTRYPOINT ["/app/docker-entrypoint.sh"]

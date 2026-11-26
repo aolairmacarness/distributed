@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthResolver } from './auth.resolver';
 import { AuthService } from './auth.service';
+import { GqlThrottlerGuard } from './guards/gql-throttler.guard';
 
 describe('AuthResolver', () => {
   let resolver: AuthResolver;
@@ -14,7 +15,10 @@ describe('AuthResolver', () => {
           useValue: {},
         },
       ],
-    }).compile();
+    })
+      .overrideGuard(GqlThrottlerGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
     resolver = module.get<AuthResolver>(AuthResolver);
   });

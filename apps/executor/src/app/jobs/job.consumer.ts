@@ -8,16 +8,17 @@ import { ClientGrpc } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 
 export abstract class JobConsumer<
-  T extends AcknowledgeRequest
+  T extends AcknowledgeRequest,
 > extends PulsarConsumer<T> {
   private jobsService: JobsServiceClient;
 
   constructor(
     topic: string,
     pulsarClient: PulsarClient,
-    private readonly grpcClient: ClientGrpc
+    private readonly grpcClient: ClientGrpc,
+    messageClass: new () => T,
   ) {
-    super(pulsarClient, topic);
+    super(pulsarClient, topic, messageClass);
   }
 
   async onModuleInit(): Promise<void> {
@@ -28,7 +29,12 @@ export abstract class JobConsumer<
 
   protected async onMessage(data: T): Promise<void> {
     await this.execute(data);
-    await firstValueFrom(this.jobsService.acknowledge(data));
+    await firstValueFrom(this.jobsService.acknowledge({ jobId: data.jobId }));
+  }
+
+  /** The message ran out of retries: record the job as FAILED. */
+  protected async onFinalFailure(data: T): Promise<void> {
+    await firstValueFrom(this.jobsService.fail({ jobId: data.jobId }));
   }
 
   protected abstract execute(data: T): Promise<void>;

@@ -22,7 +22,7 @@ export class GqlAuthGuard implements CanActivate, OnModuleInit {
   }
 
   canActivate(
-    context: ExecutionContext
+    context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
     const token = this.getRequest(context).cookies?.Authentication;
 
@@ -35,11 +35,15 @@ export class GqlAuthGuard implements CanActivate, OnModuleInit {
         this.getRequest(context).user = res;
         return true;
       }),
-      catchError(() => of(false))
+      catchError(() => of(false)),
     );
   }
 
+  // Works for both GraphQL resolvers and plain HTTP (REST) controllers.
   private getRequest(context: ExecutionContext) {
+    if (context.getType() === 'http') {
+      return context.switchToHttp().getRequest();
+    }
     const ctx = GqlExecutionContext.create(context);
     return ctx.getContext().req;
   }

@@ -1,5 +1,6 @@
 import {
   AcknowledgeRequest,
+  FailRequest,
   JobsServiceController,
   JobsServiceControllerMethods,
 } from '@jobber/grpc';
@@ -13,5 +14,9 @@ export class JobsController implements JobsServiceController {
 
   async acknowledge(request: AcknowledgeRequest) {
     await this.jobsService.acknowledge(request.jobId);
+  }
+
+  async fail(request: FailRequest) {
+    await this.jobsService.fail(request.jobId);
   }
 }

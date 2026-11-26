@@ -1,4 +1,4 @@
-import { Packages } from '@jobber/grpc';
+import { Packages, grpcClientCredentials } from '@jobber/grpc';
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ClientsModule, Transport } from '@nestjs/microservices';
@@ -15,6 +15,7 @@ import { join } from 'path';
             url: configService.getOrThrow('JOBS_GRPC_SERVICE_URL'),
             package: Packages.JOBS,
             protoPath: join(__dirname, '../../libs/grpc/proto/jobs.proto'),
+            credentials: grpcClientCredentials(configService),
           },
         }),
         inject: [ConfigService],

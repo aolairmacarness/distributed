@@ -11,6 +11,14 @@ import * as pino from 'pino';
 
         const logger = pino.pino({
           level: isProduction ? 'info' : 'debug',
+          redact: {
+            paths: [
+              'req.headers.cookie',
+              'req.headers.authorization',
+              'res.headers["set-cookie"]',
+            ],
+            censor: '[REDACTED]',
+          },
           transport: isProduction
             ? undefined
             : {

@@ -1,6 +1,25 @@
 global:
   imagePullPolicy: Always
 
+# Name of an existing Secret with keys JWT_SECRET and DB_PASSWORD. When empty,
+# the chart creates "jobber-secrets" from auth.jwt.secret and
+# postgresql.auth.password (both required).
+secrets:
+  existingSecret: ""
+
+# Default-deny ingress with explicit allows for gRPC callers.
+networkPolicy:
+  enabled: true
+
+# Applied to every app container.
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: "1"
+    memory: 1Gi
+
 ingress:
   alb: false
 
@@ -45,7 +64,10 @@ postgresql:
   namespaceOverride: postgresql
   auth:
     username: postgres
-    password: postgres
+    # Never commit a password here. Pass it at install time:
+    #   --set postgresql.auth.password="$(openssl rand -hex 24)"
+    # (URL-safe; it is embedded in DATABASE_URL.)
+    password: ""
   primary:
     initdb:
       scripts:
@@ -76,7 +98,9 @@ auth:
     http: 3000
     grpc: 5000
   jwt:
-    secret: 31FDUHHUdaXYQeN2jiofyPTnIGSjGbFP
+    # Never commit the JWT secret. Pass it at install time:
+    #   --set auth.jwt.secret="$(openssl rand -base64 48)"
+    secret: ""
     expirationMs: "28800000"
     secure: false
 
