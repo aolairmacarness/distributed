@@ -1,5 +1,5 @@
 # Builder Stage
-FROM node:20-slim AS builder
+FROM node:24-slim AS builder
 
 WORKDIR /workspace
 
@@ -9,9 +9,8 @@ RUN apt-get update && apt-get install -y openssl
 COPY package*.json ./
 COPY nx.json ./
 COPY tsconfig*.json ./
-COPY jest.config.ts ./
-COPY jest.preset.js ./
 COPY eslint.config.mjs ./
+COPY vitest.shared.mts ./
 COPY webpack.*.config.js ./
 
 COPY apps/auth ./apps/auth
@@ -25,6 +24,10 @@ RUN npm ci
 
 RUN apt-get update && apt-get install -y protobuf-compiler
 
+# prisma.config.ts requires DATABASE_URL, but generate never connects.
+# Placeholder for this build stage only; the runner gets the real URL.
+ENV DATABASE_URL=postgresql://build:build@localhost:5432/build
+
 # Generate Prisma client
 RUN cd apps/auth && npx prisma generate
 
@@ -32,7 +35,7 @@ RUN cd apps/auth && npx prisma generate
 RUN npx nx build auth
 
 # Runner Stage
-FROM node:20-slim AS runner
+FROM node:24-slim AS runner
 
 RUN apt-get update && apt-get install -y openssl
 

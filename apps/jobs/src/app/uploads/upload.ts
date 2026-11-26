@@ -1,4 +1,4 @@
-import path = require('path');
+import * as path from 'path';
 import { BadRequestException } from '@nestjs/common';
 
 export const UPLOAD_FILE_PATH = path.join(process.cwd(), 'apps/jobs/uploads');

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-"Jobber" is an Nx monorepo (npm workspaces) of NestJS 11 microservices for distributed job processing. Services talk over gRPC. Jobs go to workers through Apache Pulsar. Data lives in PostgreSQL (Prisma 7 for `auth` and `jobs`, Drizzle for `products`).
+"Jobber" is an Nx 24 monorepo (npm workspaces) of NestJS 12 microservices for distributed job processing, on Node 24 (`.nvmrc`; NestJS 12, nestjs-pino 5 and the GraphQL 14 stack need Node 22.15+). Services talk over gRPC. Jobs go to workers through Apache Pulsar. Data lives in PostgreSQL (Prisma 7 for `auth` and `jobs`, Drizzle for `products`).
 
 ## Commands
 
@@ -17,9 +17,9 @@ npm run docker:apps               # build + run all apps in containers; needs JW
 npx nx serve <app>                # auth | jobs | executor | products
 npx nx build <project>
 npx nx lint <project>
-npx nx test <project>                                   # Jest via @nx/jest plugin
-npx nx test auth --testFile=auth.service.spec.ts        # single test file
-npx nx test auth -t "name of test"                      # filter by test name
+npx nx test <project> --output-style=stream            # Vitest; without stream, Nx 24 hides test output
+npx nx test auth --output-style=stream -- auth.service.spec   # single test file
+npx nx test auth --output-style=stream -- -t "name of test"   # filter by test name
 npx nx affected -t lint test build                      # what CI runs
 
 npx nx generate-prisma <auth|jobs>    # prisma generate -> apps/<app>/src/generated/prisma
@@ -50,8 +50,8 @@ The README says GraphQL is served at `/graphql` and that `products` has a GraphQ
 
 1. **Definition (jobs app):** a job is a class in `apps/jobs/src/app/jobs/` that extends `AbstractJob<TMessage>` and has the `@Job({ name, description })` decorator. `JobsService` finds all such providers at startup using `@golevelup/nestjs-discovery`. The class must also be listed in `providers` in `jobs.module.ts`.
 2. **Execution:** the `executeJob` GraphQL mutation calls `AbstractJob.execute(data, name, userId)`. It validates **every** message against `messageClass` first (with a placeholder `jobId`), and only then creates the Prisma `Job` row (`userId` = caller, `size` = number of messages, status `IN_PROGRESS`) and publishes each message to a Pulsar topic named after the job (`Jobs` enum in `libs/nestjs/src/lib/jobs.ts`). If the input contains `fileName`, the payload is read from `apps/jobs/uploads/<fileName>`, which is where the upload endpoint saves files. `resolveUploadPath` (`apps/jobs/src/app/uploads/upload.ts`) only accepts a bare `name.json`. The uploads path is resolved from `process.cwd()`.
-3. **Consumption (executor):** each topic has a consumer that extends `JobConsumer<T>` (which in turn extends `PulsarConsumer<T>` from `libs/pulsar`) and implements `execute(data)`. `PulsarConsumer` re-validates every message against the message class passed to its constructor, with `whitelist: true`. Invalid payloads are logged and acked (dropped). A failed `execute` is negative-acked and redelivered up to `MAX_REDELIVER_COUNT` (3, `libs/pulsar/src/lib/constants.ts`), then routed to the `<topic>-DLQ` dead-letter topic.
-4. **Acknowledgement:** after `execute`, `JobConsumer` calls `JobsService.acknowledge` over gRPC. The jobs app increments `completed` and marks the job `COMPLETED` once `completed >= size`. On a message's last failed delivery, `JobConsumer.onFinalFailure` calls the `Fail` RPC, which marks the job `FAILED`. Delivery is at-least-once, so `execute` can run more than once for a message.
+3. **Consumption (executor):** each topic has a consumer that extends `JobConsumer<T>` (which in turn extends `PulsarConsumer<T>` from `libs/pulsar`) and implements `execute(data)`. `PulsarConsumer` re-validates every message against the message class passed to its constructor, with `whitelist: true`. Invalid payloads are logged and acked (dropped). A failed `execute` is negative-acked and redelivered after 10 s. With `MAX_REDELIVER_COUNT` = 3 (`libs/pulsar/src/lib/constants.ts`), a message is delivered at most 4 times (the first delivery plus 3 redeliveries). After that, the Pulsar client routes it to the `<topic>-DLQ` dead-letter topic.
+4. **Acknowledgement:** after `execute`, `JobConsumer` calls `JobsService.acknowledge` over gRPC. The jobs app increments `completed` and marks the job `COMPLETED` once `completed >= size`. On a message's last failed delivery (redelivery count = `MAX_REDELIVER_COUNT`), `JobConsumer.onFinalFailure` calls the `Fail` RPC, which marks the job `FAILED`. Delivery is at-least-once, so `execute` can run more than once for a message.
 
 **To add a new job type:** add an entry to the `Jobs` enum. Add a message DTO to `libs/pulsar/src/lib/messages/` that extends `JobMessage`. Give **every** field a class-validator decorator: the executor validates with `whitelist: true`, so undecorated fields are silently stripped. Add an `@Job` class in `apps/jobs` and register it as a provider. Add a `JobConsumer` in `apps/executor`, pass the message class as the 4th `super(...)` argument, and register it.
 
@@ -80,6 +80,20 @@ The libs are `@jobber/grpc`, `@jobber/graphql`, `@jobber/nestjs`, `@jobber/pulsa
 
 `auth` and `jobs` each have their own `prisma/schema.prisma`, using the `prisma-client` generator with `moduleFormat = "cjs"` and output to `src/generated/prisma`. The generated output is committed. `prisma.config.ts` reads `DATABASE_URL` from the app's `.env`. The `build` and `test` targets depend on `generate-prisma`. `migrate-prisma` (`migrate dev`) needs a running database. In Docker, `docker-entrypoint.sh` runs `prisma migrate deploy` before starting the app.
 
+Keep `prisma`, `@prisma/client` and `@prisma/adapter-pg` on the **same version**. The client is generated by the `prisma` CLI and loads version-specific runtime files from `@prisma/client`. A mismatch builds and boots fine, but every query then fails with `Cannot find module '@prisma/client/runtime/…'`. The users service maps Prisma errors to a generic message, so look for `createUser failed:` in the auth log rather than in the API response.
+
+### Tests
+
+Vitest, inferred by the `@nx/vitest` plugin. Each project's `vitest.config.mts` calls `projectConfig()` from the root `vitest.shared.mts`, which does two things:
+- It transpiles with SWC, not esbuild, so Nest decorator metadata is emitted. Without it, DI in `Test.createTestingModule` breaks.
+- It aliases `@jobber/*` to `libs/*/src` from `tsconfig.base.json`. Otherwise Vite resolves the npm workspace package, whose entry point is build output.
+
+Specs import `describe`, `it`, `expect` and `vi` from `vitest` explicitly; there are no test globals. Source must be valid ES modules, so write `import * as x from '…'`, not `import x = require('…')`.
+
+### Lint
+
+ESLint 9 flat config: the root `eslint.config.mjs`, imported by each project's `eslint.config.mjs`. `**/webpack.config.js` is ignored on purpose. Nx 24's `@nx/enforce-module-boundaries` flags their `require('../../webpack.app.config')`.
+
 ## Configuration
 
 Each app reads `apps/<app>/.env` through `@nestjs/config`. These files are git-ignored. Copy `apps/<app>/.env.example`, which lists that app's keys.
@@ -95,9 +109,9 @@ Logging uses `nestjs-pino`, configured in `libs/nestjs`, with cookie and authori
 
 ## Deployment
 
-CI (`.github/workflows/ci.yml`, Node 20, actions pinned to commit SHAs) runs `nx affected -t lint test build` with `npm ci --legacy-peer-deps`. The ECR image build and push steps are currently commented out.
+CI (`.github/workflows/ci.yml`, Node 24, actions pinned to commit SHAs) runs `nx affected -t lint test build` with `npm ci --legacy-peer-deps`. The ECR image build and push steps are currently commented out.
 
-The Dockerfiles build from the repo root, use `npm ci` without `--legacy-peer-deps`, and run as the non-root `node` user. When an app starts importing a new lib, add the matching `COPY` lines to that app's Dockerfile.
+The Dockerfiles (`node:24-slim`) build from the repo root, use `npm ci` without `--legacy-peer-deps`, and run as the non-root `node` user. The builder stage copies the root config files that Nx plugins load: `eslint.config.mjs`, `vitest.shared.mts`, `nx.json`, `tsconfig*.json` and `webpack.*.config.js`. If you add a root config that an inferred plugin reads, copy it too, or the image's `nx build` fails while building the project graph. The `auth`/`jobs` builder stages set a placeholder `DATABASE_URL`, because `.env` files never enter the build context and `prisma generate` only needs the variable to exist. When an app starts importing a new lib, add the matching `COPY` lines to that app's Dockerfile.
 
 The Helm chart is in `charts/jobber` (`values.yaml`, `values-aws.yaml`). It refuses to render without secrets: pass `--set auth.jwt.secret=… --set postgresql.auth.password=…` (URL-safe, because it is embedded in `DATABASE_URL`), or set `secrets.existingSecret`. Verify chart changes with `helm template t charts/jobber --set auth.jwt.secret=x --set postgresql.auth.password=y` and with `helm lint`.
 
