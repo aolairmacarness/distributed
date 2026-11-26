@@ -36,5 +36,8 @@
       },
       "exclude": ["apps/products-e2e/**/*"]
     }
-  ]
+  ],
+  "affected": {
+    "legacy": true
+  }
 }
