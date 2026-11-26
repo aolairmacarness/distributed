@@ -23,11 +23,6 @@ import { ThrottlerModule } from '@nestjs/throttler';
       plugins: [new GqlLoggingPlugin()],
       graphiql: true,
       path: 'auth',
-      playground: {
-        settings: {
-          'request.credentials': 'include',
-        },
-      },
       context: ({ req, res }) => ({ req, res }),
       autoSchemaFile: true,
     }),
