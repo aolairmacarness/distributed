@@ -48,3 +48,5 @@ data/*
 .env
 .env.*
 !.env.example
+
+.nx/migrate-runs
