@@ -25,6 +25,10 @@ RUN npm ci
 
 RUN apt-get update && apt-get install -y protobuf-compiler
 
+# prisma.config.ts requires DATABASE_URL, but generate never connects.
+# Placeholder for this build stage only; the runner gets the real URL.
+ENV DATABASE_URL=postgresql://build:build@localhost:5432/build
+
 # Generate Prisma client
 RUN cd apps/auth && npx prisma generate
 

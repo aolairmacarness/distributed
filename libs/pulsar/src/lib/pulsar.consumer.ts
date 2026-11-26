@@ -40,11 +40,13 @@ export abstract class PulsarConsumer<T extends object> {
       await this.onMessage(data);
       await this.consumer.acknowledge(message);
     } catch (err) {
+      // Pulsar delivers once plus MAX_REDELIVER_COUNT redeliveries; the
+      // redelivery count of the last delivery equals MAX_REDELIVER_COUNT.
       const isFinalAttempt =
-        message.getRedeliveryCount() >= MAX_REDELIVER_COUNT - 1;
+        message.getRedeliveryCount() >= MAX_REDELIVER_COUNT;
       this.logger.error(
         `Message failed (delivery ${message.getRedeliveryCount() + 1}/` +
-          `${MAX_REDELIVER_COUNT}): ${String(err)}`,
+          `${MAX_REDELIVER_COUNT + 1}): ${String(err)}`,
       );
       if (isFinalAttempt && this.onFinalFailure) {
         await this.onFinalFailure(data, err).catch((hookErr) =>
