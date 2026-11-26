@@ -1,3 +1,4 @@
+import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 import { BadRequestException } from '@nestjs/common';
 import { FibonacciMessage, PulsarClient } from '@jobber/pulsar';
 import { FibonacciJob } from './fibonacci/fibonacci.job';
@@ -5,14 +6,14 @@ import { PrismaService } from '../prisma/prisma.service';
 
 describe('AbstractJob (via FibonacciJob)', () => {
   let job: FibonacciJob;
-  let send: jest.Mock;
-  let create: jest.Mock;
+  let send: Mock;
+  let create: Mock;
 
   beforeEach(() => {
-    send = jest.fn().mockResolvedValue(undefined);
-    create = jest.fn().mockResolvedValue({ id: 7 });
+    send = vi.fn().mockResolvedValue(undefined);
+    create = vi.fn().mockResolvedValue({ id: 7 });
     const pulsarClient = {
-      createProducer: jest.fn().mockResolvedValue({ send }),
+      createProducer: vi.fn().mockResolvedValue({ send }),
     } as unknown as PulsarClient;
     const prisma = { job: { create } } as unknown as PrismaService;
     job = new FibonacciJob(pulsarClient, prisma);

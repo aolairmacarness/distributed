@@ -20,7 +20,12 @@
       "@jobber/nestjs": ["libs/nestjs/src/index.ts"],
       "@jobber/prisma": ["libs/prisma/src/index.ts"],
       "@jobber/pulsar": ["libs/pulsar/src/index.ts"]
-    }
+    },
+    "strict": false,
+    "noUncheckedSideEffectImports": false,
+    "types": ["*"],
+    "esModuleInterop": false,
+    "ignoreDeprecations": "6.0"
   },
   "exclude": ["node_modules", "tmp"]
 }

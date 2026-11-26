@@ -1,5 +1,5 @@
 # Builder Stage
-FROM node:20-slim AS builder
+FROM node:24-slim AS builder
 
 WORKDIR /workspace
 
@@ -8,9 +8,8 @@ RUN apt-get update && apt-get install -y openssl
 COPY package*.json ./
 COPY nx.json ./
 COPY tsconfig*.json ./
-COPY jest.config.ts ./
-COPY jest.preset.js ./
-COPY .eslintrc.json ./
+COPY eslint.config.mjs ./
+COPY vitest.shared.mts ./
 COPY webpack.*.config.js ./
 
 COPY apps/jobs ./apps/jobs
@@ -34,7 +33,7 @@ RUN cd apps/jobs && npx prisma generate
 RUN npx nx build jobs
 
 # Runner Stage
-FROM node:20-slim AS runner
+FROM node:24-slim AS runner
 
 RUN apt-get update && apt-get install -y openssl
 

@@ -1,14 +1,13 @@
 # Builder Stage
-FROM node:20-slim AS builder
+FROM node:24-slim AS builder
 
 WORKDIR /workspace
 
 COPY package*.json ./
 COPY nx.json ./
 COPY tsconfig*.json ./
-COPY jest.config.ts ./
-COPY jest.preset.js ./
-COPY .eslintrc.json ./
+COPY eslint.config.mjs ./
+COPY vitest.shared.mts ./
 COPY webpack.*.config.js ./
 
 COPY apps/executor ./apps/executor
@@ -23,7 +22,7 @@ RUN apt-get update && apt-get install -y protobuf-compiler
 RUN npx nx build executor
 
 # Runner Stage
-FROM node:20-slim AS runner
+FROM node:24-slim AS runner
 
 WORKDIR /app
 

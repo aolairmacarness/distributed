@@ -48,3 +48,9 @@ data/*
 .env
 .env.*
 !.env.example
+
+.nx/migrate-runs
+.claude/worktrees
+.claude/settings.local.json
+.nx/polygraph
+.nx/self-healing
