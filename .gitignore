@@ -50,3 +50,4 @@ data/*
 !.env.example
 
 .nx/migrate-runs
+.claude/worktrees
