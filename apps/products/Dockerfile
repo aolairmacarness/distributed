@@ -8,7 +8,7 @@ COPY nx.json ./
 COPY tsconfig*.json ./
 COPY jest.config.ts ./
 COPY jest.preset.js ./
-COPY .eslintrc.json ./
+COPY eslint.config.mjs ./
 COPY webpack.*.config.js ./
 
 COPY apps/products ./apps/products
